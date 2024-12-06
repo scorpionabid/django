@@ -1,0 +1,502 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+.chart-container {
+    position: relative;
+    height: 300px;
+    margin-bottom: 2rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Məktəb dashboard -->
+    {% if user.user_type == 'school' %}
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Ümumi Şagird</h5>
+                    <h2 class="mb-0">{{ total_students }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Bugünkü Davamiyyət</h5>
+                    <h2 class="mb-0">{{ attendance_today }}</h2>
+                    <small>{{ attendance_percent|floatformat:1 }}%</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Son qiymətləndirmələr -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Son Qiymətləndirmələr</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Şagird</th>
+                                    <th>Fənn</th>
+                                    <th>Növ</th>
+                                    <th>Qiymət</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for assessment in recent_assessments %}
+                                <tr>
+                                    <td>{{ assessment.student.get_full_name }}</td>
+                                    <td>{{ assessment.subject.name }}</td>
+                                    <td>{{ assessment.assessment_type.name }}</td>
+                                    <td>{{ assessment.grade }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Son davamiyyətlər -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Son Davamiyyətlər</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Şagird</th>
+                                    <th>Tarix</th>
+                                    <th>Səhər</th>
+                                    <th>Günorta</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for attendance in recent_attendance %}
+                                <tr>
+                                    <td>{{ attendance.student.get_full_name }}</td>
+                                    <td>{{ attendance.date|date:"d.m.Y" }}</td>
+                                    <td>{{ attendance.get_morning_status_display }}</td>
+                                    <td>{{ attendance.get_afternoon_status_display }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Sinif Statistikası</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="classChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Fənn Qiymətləri</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="subjectChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sektor dashboard -->
+    {% elif user.user_type == 'sector' %}
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Məktəb Sayı</h5>
+                    <h2 class="mb-0">{{ total_schools }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Ümumi Şagird</h5>
+                    <h2 class="mb-0">{{ total_students }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Məktəb Statistikası</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Məktəb</th>
+                            <th>Şagird Sayı</th>
+                            <th>Ortalama Qiymət</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for school in school_stats %}
+                        <tr>
+                            <td>{{ school.name }}</td>
+                            <td>{{ school.student_count }}</td>
+                            <td>{{ school.avg_grade|default:"-"|floatformat:2 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Məktəb Müqayisəsi</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="schoolComparisonChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Sektor Müqayisəsi</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="sectorComparisonChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Şagird Paylanması</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="studentDistributionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Region dashboard -->
+    {% else %}  {# region user #}
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Sektor Sayı</h5>
+                    <h2 class="mb-0">{{ total_sectors }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Məktəb Sayı</h5>
+                    <h2 class="mb-0">{{ total_schools }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Ümumi Şagird</h5>
+                    <h2 class="mb-0">{{ total_students }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Sektor Statistikası</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Sektor</th>
+                            <th>Məktəb Sayı</th>
+                            <th>Şagird Sayı</th>
+                            <th>Ortalama Qiymət</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sector in sector_stats %}
+                        <tr>
+                            <td>{{ sector.name }}</td>
+                            <td>{{ sector.school_count }}</td>
+                            <td>{{ sector.student_count }}</td>
+                            <td>{{ sector.avg_grade|default:"-"|floatformat:2 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sektor müqayisə qrafiki -->
+    const sectorCtx = document.getElementById('sectorComparisonChart').getContext('2d');
+    new Chart(sectorCtx, {
+        type: 'bar',
+        data: {
+            labels: [{% for sector in sector_stats %}'{{ sector.name }}',{% endfor %}],
+            datasets: [{
+                label: 'Məktəb sayı',
+                data: [{% for sector in sector_stats %}{{ sector.school_count }},{% endfor %}],
+                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1,
+                yAxisID: 'y'
+            }, {
+                label: 'Ortalama qiymət',
+                data: [{% for sector in sector_stats %}{{ sector.avg_grade|default:0|floatformat:2 }},{% endfor %}],
+                type: 'line',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                yAxisID: 'y1'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    type: 'linear',
+                    position: 'left',
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Məktəb sayı'
+                    }
+                },
+                y1: {
+                    type: 'linear',
+                    position: 'right',
+                    beginAtZero: true,
+                    max: 10,
+                    title: {
+                        display: true,
+                        text: 'Ortalama qiymət'
+                    },
+                    grid: {
+                        drawOnChartArea: false
+                    }
+                }
+            }
+        }
+    });
+
+    <!-- Şagird paylanması qrafiki -->
+    const distributionCtx = document.getElementById('studentDistributionChart').getContext('2d');
+    new Chart(distributionCtx, {
+        type: 'pie',
+        data: {
+            labels: [{% for sector in sector_stats %}'{{ sector.name }}',{% endfor %}],
+            datasets: [{
+                data: [{% for sector in sector_stats %}{{ sector.student_count }},{% endfor %}],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.5)',
+                    'rgba(54, 162, 235, 0.5)',
+                    'rgba(255, 206, 86, 0.5)',
+                    'rgba(75, 192, 192, 0.5)',
+                    'rgba(153, 102, 255, 0.5)',
+                    'rgba(255, 159, 64, 0.5)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const value = context.raw;
+                            const percentage = ((value / total) * 100).toFixed(1);
+                            return `${context.label}: ${value} (${percentage}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    {% if user.user_type == 'school' %}
+    // Sinif qrafiki
+    const classCtx = document.getElementById('classChart').getContext('2d');
+    new Chart(classCtx, {
+        type: 'bar',
+        data: {
+            labels: [{% for stat in class_stats %}'{{ stat.class_grade }} sinif',{% endfor %}],
+            datasets: [{
+                label: 'Şagird sayı',
+                data: [{% for stat in class_stats %}{{ stat.count }},{% endfor %}],
+                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+
+    // Fənn qrafiki
+    const subjectCtx = document.getElementById('subjectChart').getContext('2d');
+    new Chart(subjectCtx, {
+        type: 'line',
+        data: {
+            labels: [{% for stat in subject_stats %}'{{ stat.subject__name }}',{% endfor %}],
+            datasets: [{
+                label: 'Ortalama qiymət',
+                data: [{% for stat in subject_stats %}{{ stat.avg_grade|floatformat:2 }},{% endfor %}],
+                borderColor: 'rgba(75, 192, 192, 1)',
+                tension: 0.1,
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    min: 0,
+                    max: 10
+                }
+            }
+        }
+    });
+
+    {% elif user.user_type == 'sector' %}
+    // Məktəb müqayisə qrafiki
+    const schoolCtx = document.getElementById('schoolComparisonChart').getContext('2d');
+    new Chart(schoolCtx, {
+        type: 'bar',
+        data: {
+            labels: [{% for school in school_stats %}'{{ school.name }}',{% endfor %}],
+            datasets: [{
+                label: 'Şagird sayı',
+                data: [{% for school in school_stats %}{{ school.student_count }},{% endfor %}],
+                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1,
+                yAxisID: 'y'
+            }, {
+                label: 'Ortalama qiymət',
+                data: [{% for school in school_stats %}{{ school.avg_grade|default:0|floatformat:2 }},{% endfor %}],
+                type: 'line',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                yAxisID: 'y1'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    type: 'linear',
+                    position: 'left',
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Şagird sayı'
+                    }
+                },
+                y1: {
+                    type: 'linear',
+                    position: 'right',
+                    beginAtZero: true,
+                    max: 10,
+                    title: {
+                        display: true,
+                        text: 'Ortalama qiymət'
+                    },
+                    grid: {
+                        drawOnChartArea: false
+                    }
+                }
+            }
+        }
+    });
+    {% endif %}
+});
+</script>
+{% endblock %} 

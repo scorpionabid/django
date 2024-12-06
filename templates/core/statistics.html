@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Sistem Statistikası{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="h3 mb-4">Sistem Statistikası</h1>
+    
+    <!-- Əsas göstəricilər -->
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card stats-card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Məktəblər</h5>
+                    <h2 class="mb-0">{{ total_schools }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stats-card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Şagirdlər</h5>
+                    <h2 class="mb-0">{{ total_students }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stats-card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Müəllimlər</h5>
+                    <h2 class="mb-0">{{ total_teachers }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stats-card bg-warning text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Orta Qiymət</h5>
+                    <h2 class="mb-0">{{ assessment_stats.avg_grade|floatformat:1 }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Davamiyyət statistikası -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Bugünkü Davamiyyət</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col">
+                            <h4 class="text-success">{{ attendance_today.present }}</h4>
+                            <small class="text-muted">İştirak</small>
+                        </div>
+                        <div class="col">
+                            <h4 class="text-danger">{{ attendance_today.absent }}</h4>
+                            <small class="text-muted">Qayıb</small>
+                        </div>
+                        <div class="col">
+                            <h4 class="text-warning">{{ attendance_today.late }}</h4>
+                            <small class="text-muted">Gecikən</small>
+                        </div>
+                        <div class="col">
+                            <h4 class="text-info">{{ attendance_today.excused }}</h4>
+                            <small class="text-muted">Üzrlü</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Məktəb statistikası -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Ən Böyük Məktəblər</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Məktəb</th>
+                                    <th>Şagird</th>
+                                    <th>Müəllim</th>
+                                    <th>Orta Qiymət</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for school in school_stats %}
+                                <tr>
+                                    <td>{{ school.name }}</td>
+                                    <td>{{ school.student_count }}</td>
+                                    <td>{{ school.teacher_count }}</td>
+                                    <td>{{ school.avg_grade|floatformat:1 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+
+{% block title %}Yeni Qiymətləndirmə{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Yeni Qiymətləndirmə</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="assessmentForm">
+                        {% csrf_token %}
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Fənn</label>
+                                <select name="subject" class="form-select" required>
+                                    <option value="">Fənn seçin</option>
+                                    {% for subject in subjects %}
+                                    <option value="{{ subject.id }}">{{ subject.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label class="form-label">Sinif</label>
+                                <select name="class_grade" class="form-select" required disabled>
+                                    <option value="">Əvvəlcə fənn seçin</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label class="form-label">Qiymətləndirmə növü</label>
+                                <select name="assessment_type" class="form-select" required>
+                                    <option value="">Növ seçin</option>
+                                    {% for type in assessment_types %}
+                                    <option value="{{ type.id }}">{{ type.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table" id="studentsTable" style="display: none;">
+                                <thead>
+                                    <tr>
+                                        <th>Şagird</th>
+                                        <th>Qiymət</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Yadda saxla</button>
+                            <a href="{% url 'assessment_list' %}" class="btn btn-secondary">Geri qayıt</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    $('select[name="subject"]').change(function() {
+        const subjectId = $(this).val();
+        if (subjectId) {
+            $.get("{% url 'get_classes' %}", {subject_id: subjectId})
+                .done(function(data) {
+                    const classSelect = $('select[name="class_grade"]');
+                    classSelect.empty().append('<option value="">Sinif seçin</option>');
+                    data.classes.forEach(function(grade) {
+                        classSelect.append(`<option value="${grade}">${grade}</option>`);
+                    });
+                    classSelect.prop('disabled', false);
+                });
+        }
+    });
+
+    $('select[name="class_grade"]').change(function() {
+        const classGrade = $(this).val();
+        const subjectId = $('select[name="subject"]').val();
+        
+        if (classGrade && subjectId) {
+            $.get("{% url 'get_students' %}", {
+                subject_id: subjectId,
+                class_grade: classGrade
+            })
+            .done(function(data) {
+                const tbody = $('#studentsTable tbody');
+                tbody.empty();
+                
+                data.students.forEach(function(student) {
+                    tbody.append(`
+                        <tr>
+                            <td>${student.last_name} ${student.first_name}</td>
+                            <td>
+                                <input type="number" 
+                                       name="grade_${student.id}" 
+                                       class="form-control" 
+                                       min="1" 
+                                       max="10" 
+                                       step="1">
+                            </td>
+                        </tr>
+                    `);
+                });
+                
+                $('#studentsTable').show();
+            });
+        }
+    });
+});
+</script>
+{% endblock %} 

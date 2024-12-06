@@ -1,0 +1,85 @@
+{% load static %}
+
+<div class="sidebar bg-light">
+    <div class="position-sticky pt-3">
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" 
+                   href="{% url 'dashboard' %}">
+                    <i class="fas fa-home me-2"></i>
+                    Ana Səhifə
+                </a>
+            </li>
+
+            {% if user.user_type == 'school' %}
+            <li class="nav-item">
+                <a class="nav-link {% if 'student' in request.path %}active{% endif %}" 
+                   href="{% url 'student_list' %}">
+                    <i class="fas fa-users me-2"></i>
+                    Şagirdlər
+                </a>
+            </li>
+            
+            <li class="nav-item">
+                <a class="nav-link {% if 'teacher' in request.path %}active{% endif %}" 
+                   href="{% url 'teacher_list' %}">
+                    <i class="fas fa-chalkboard-teacher me-2"></i>
+                    Müəllimlər
+                </a>
+            </li>
+            
+            <li class="nav-item">
+                <a class="nav-link {% if 'assessment' in request.path %}active{% endif %}" 
+                   href="{% url 'assessment_list' %}">
+                    <i class="fas fa-tasks me-2"></i>
+                    Qiymətləndirmə
+                </a>
+            </li>
+            
+            <li class="nav-item">
+                <a class="nav-link {% if 'attendance' in request.path %}active{% endif %}" 
+                   href="{% url 'attendance_list' %}">
+                    <i class="fas fa-calendar-check me-2"></i>
+                    Davamiyyət
+                </a>
+            </li>
+            {% endif %}
+
+            {% if user.user_type == 'sector' or user.user_type == 'region' %}
+            <li class="nav-item">
+                <a class="nav-link {% if 'school' in request.path %}active{% endif %}" 
+                   href="{% url 'school_list' %}">
+                    <i class="fas fa-school me-2"></i>
+                    Məktəblər
+                </a>
+            </li>
+            {% endif %}
+
+            {% if user.user_type == 'region' %}
+            <li class="nav-item">
+                <a class="nav-link {% if 'region-manager' in request.path %}active{% endif %}" 
+                   href="{% url 'region_manager' %}">
+                    <i class="fas fa-cogs me-2"></i>
+                    Region İdarəetməsi
+                </a>
+            </li>
+            {% endif %}
+
+            <li class="nav-item">
+                <a class="nav-link {% if 'statistics' in request.path %}active{% endif %}" 
+                   href="{% url 'statistics' %}">
+                    <i class="fas fa-chart-line me-2"></i>
+                    Statistika
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {% if 'history' in request.path %}active{% endif %}" 
+                   href="{% url 'history' %}">
+                    <i class="fas fa-history me-2"></i>
+                    Tarixçə
+                </a>
+            </li>
+        </ul>
+    </div>
+</div> 

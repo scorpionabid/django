@@ -1,0 +1,67 @@
+school_management/
+├── apps/
+│   ├── accounts/
+│   │   ├── migrations/
+│   │   ├── templates/accounts/
+│   │   ├── __init__.py
+│   │   ├── admin.py
+│   │   ├── apps.py
+│   │   ├── forms.py
+│   │   ├── models.py
+│   │   ├── urls.py
+│   │   └── views.py
+│   ├── assessments/
+│   │   ├── migrations/
+│   │   ├── templates/assessments/
+│   │   ├── __init__.py
+│   │   ├── admin.py
+│   │   ├── apps.py
+│   │   ├── forms.py
+│   │   ├── models.py
+│   │   ├── urls.py
+│   │   └── views.py
+│   ├── attendance/
+│   │   ├── migrations/
+│   │   ├── templates/attendance/
+│   │   ├── __init__.py
+│   │   ├── admin.py
+│   │   ├── apps.py
+│   │   ├── forms.py
+│   │   ├── models.py
+│   │   ├── urls.py
+│   │   └── views.py
+│   ├── api/
+│   │   ├── __init__.py
+│   │   ├── serializers.py
+│   │   ├── urls.py
+│   │   └── views.py
+│   └── core/
+│       ├── templates/core/
+│       ├── __init__.py
+│       ├── apps.py
+│       └── views.py
+├── media/
+│   ├── excuse_documents/
+│   └── profile_photos/
+├── static/
+│   ├── css/
+│   ├── js/
+│   ├── img/
+│   ├── vendor/
+│   ├── fonts/
+│   │   └── DejaVuSans.ttf
+│   └── templates/
+│       ├── components/
+│       │   ├── navbar.html
+│       │   ├── sidebar.html
+│       │   └── footer.html
+│       ├── 403.html
+│       ├── 404.html
+│       ├── 500.html
+│       └── base.html
+├── .env
+├── .gitignore
+├── manage.py
+├── pytest.ini
+├── README.md
+└── requirements.txt 

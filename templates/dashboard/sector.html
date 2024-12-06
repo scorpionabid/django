@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ sector.name }} - Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Ümumi Məlumat</h5>
+                    <p>Məktəb sayı: {{ schools.count }}</p>
+                    <p>Ümumi şagird sayı: {{ sector.total_students }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Məktəblər üzrə davamiyyət</h5>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Məktəb</th>
+                                    <th>Ümumi şagird</th>
+                                    <th>İştirak edənlər</th>
+                                    <th>İştirak faizi</th>
+                                    <th>Ətraflı</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stat in school_stats %}
+                                <tr>
+                                    <td>{{ stat.school.name }}</td>
+                                    <td>{{ stat.total_students }}</td>
+                                    <td>{{ stat.present }}</td>
+                                    <td>{{ stat.percentage }}%</td>
+                                    <td>
+                                        <a href="{% url 'school_detail' stat.school.id %}" 
+                                           class="btn btn-sm btn-primary">
+                                            Bax
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

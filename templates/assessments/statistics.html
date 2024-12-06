@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+{% block title %}Qiymətləndirmə Statistikası{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h2>Qiymətləndirmə Statistikası</h2>
+            <p class="text-muted">
+                {{ academic_year }} Tədris ili, 
+                {% if semester == 1 %}Birinci{% else %}İkinci{% endif %} semestr
+            </p>
+        </div>
+        <div class="col-auto">
+            <a href="{% url 'export_assessment_report' %}?semester={{ semester }}&academic_year={{ academic_year }}" 
+               class="btn btn-success">
+                Excel Hesabatı
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Ümumi Statistika</h5>
+                    <p>Ümumi qiymətləndirmə sayı: {{ stats.total_assessments }}</p>
+                    <p>Ortalama qiymət: {{ stats.average_grade|floatformat:2 }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Qiymətləndirmə növləri üzrə</h5>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Növ</th>
+                                    <th>Qiymət sayı</th>
+                                    <th>Ortalama</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in stats.by_type %}
+                                <tr>
+                                    <td>{{ item.assessment_type__name }}</td>
+                                    <td>{{ item.count }}</td>
+                                    <td>{{ item.avg_grade|floatformat:2 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Fənlər üzrə</h5>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Fənn</th>
+                                    <th>Qiymət sayı</th>
+                                    <th>Ortalama</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in stats.by_subject %}
+                                <tr>
+                                    <td>{{ item.subject__name }}</td>
+                                    <td>{{ item.count }}</td>
+                                    <td>{{ item.avg_grade|floatformat:2 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Siniflər üzrə</h5>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Sinif</th>
+                                    <th>Qiymət sayı</th>
+                                    <th>Ortalama</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in stats.by_class %}
+                                <tr>
+                                    <td>{{ item.student__class_grade }}</td>
+                                    <td>{{ item.count }}</td>
+                                    <td>{{ item.avg_grade|floatformat:2 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

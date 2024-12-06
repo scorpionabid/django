@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+
+{% block title %}Qiymətləndirmə{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h2>Qiymətləndirmə</h2>
+        </div>
+        {% if user.user_type == 'region' %}
+        <div class="col-auto">
+            <a href="{% url 'assessment_type_create' %}" class="btn btn-success">
+                Yeni Qiymətləndirmə Növü
+            </a>
+        </div>
+        {% endif %}
+        {% if user.user_type == 'school' %}
+        <div class="col-auto">
+            <a href="{% url 'assessment_create' %}" class="btn btn-primary">
+                Yeni Qiymətləndirmə
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form id="filterForm" class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <label class="form-label">Fənn</label>
+                    <select class="form-select" id="subject">
+                        <option value="">Fənn seçin</option>
+                        {% for subject in subjects %}
+                        <option value="{{ subject.id }}">{{ subject.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Sinif</label>
+                    <select class="form-select" id="class_grade" disabled>
+                        <option value="">Əvvəlcə fənn seçin</option>
+                    </select>
+                </div>
+            </form>
+
+            <div class="table-responsive">
+                <table class="table table-bordered" id="gradesTable" style="display: none;">
+                    <thead>
+                        <tr>
+                            <th>Şagird</th>
+                            {% for type in assessment_types %}
+                            <th>{{ type.name }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/assessment.js' %}"></script>
+<script>
+$(document).ready(function() {
+    const assessmentManager = new AssessmentManager();
+    
+    $('#subject').change(function() {
+        const subjectId = $(this).val();
+        if (subjectId) {
+            $.get("{% url 'get_classes' %}", {subject_id: subjectId})
+                .done(function(data) {
+                    const classSelect = $('#class_grade');
+                    classSelect.empty().append('<option value="">Sinif seçin</option>');
+                    data.classes.forEach(function(grade) {
+                        classSelect.append(`<option value="${grade}">${grade}</option>`);
+                    });
+                    classSelect.prop('disabled', false);
+                });
+        }
+    });
+
+    $('#class_grade').change(function() {
+        const classGrade = $(this).val();
+        const subjectId = $('#subject').val();
+        
+        if (classGrade && subjectId) {
+            $.get("{% url 'get_students' %}", {
+                subject_id: subjectId,
+                class_grade: classGrade
+            })
+            .done(function(data) {
+                const tbody = $('#gradesTable tbody');
+                tbody.empty();
+                
+                data.students.forEach(function(student) {
+                    let row = `<tr><td>${student.last_name} ${student.first_name}</td>`;
+                    {% for type in assessment_types %}
+                    row += `
+                        <td class="grade-cell">
+                            <input type="number" 
+                                   class="form-control form-control-sm"
+                                   data-student="${student.id}"
+                                   data-type="{{ type.id }}"
+                                   data-min="{{ type.min_grade }}"
+                                   data-max="{{ type.max_grade }}"
+                                   min="{{ type.min_grade }}"
+                                   max="{{ type.max_grade }}"
+                                   step="0.01">
+                        </td>`;
+                    {% endfor %}
+                    row += '</tr>';
+                    tbody.append(row);
+                });
+                
+                $('#gradesTable').show();
+                
+                // Mövcud qiymətləri yüklə
+                data.students.forEach(function(student) {
+                    loadGrades(student.id);
+                });
+            });
+        }
+    });
+});
+</script>
+{% endblock %} 

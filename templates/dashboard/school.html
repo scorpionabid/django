@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ school.name }} - Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Ümumi Məlumat</h5>
+                    <p>Şagird sayı: {{ school.total_students }}</p>
+                    <p>Müəllim sayı: {{ teachers.count }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Bu günün davamiyyəti</h5>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Sinif</th>
+                                    <th>Ümumi say</th>
+                                    <th>İştirak edənlər</th>
+                                    <th>İştirak faizi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for grade in attendance_stats %}
+                                <tr>
+                                    <td>{{ grade.class_grade }}</td>
+                                    <td>{{ grade.total }}</td>
+                                    <td>{{ grade.present }}</td>
+                                    <td>{{ grade.percentage }}%</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

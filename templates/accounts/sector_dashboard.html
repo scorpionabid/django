@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}Sektor Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Əsas statistika -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5>Ümumi Məktəb</h5>
+                    <h2>{{ total_stats.schools }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5>Ümumi Şagird</h5>
+                    <h2>{{ total_stats.students }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5>Ümumi Müəllim</h5>
+                    <h2>{{ total_stats.teachers }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Məktəb statistikası -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Məktəb Göstəriciləri</h5>
+            <button class="btn btn-sm btn-success" onclick="exportToExcel('schoolTable')">
+                <i class="fas fa-file-excel me-1"></i>Excel
+            </button>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table" id="schoolTable">
+                    <thead>
+                        <tr>
+                            <th>Məktəb</th>
+                            <th>Şagird sayı</th>
+                            <th>Müəllim sayı</th>
+                            <th>Davamiyyət %</th>
+                            <th>Orta qiymət</th>
+                            <th>Ətraflı</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for school in school_stats %}
+                        <tr>
+                            <td>{{ school.name }}</td>
+                            <td>{{ school.student_count }}</td>
+                            <td>{{ school.teacher_count }}</td>
+                            <td>{{ school.attendance_rate|floatformat:1 }}%</td>
+                            <td>{{ school.avg_grade|floatformat:2 }}</td>
+                            <td>
+                                <a href="{% url 'school_detail' school.id %}" 
+                                   class="btn btn-sm btn-primary">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+function exportToExcel(tableId) {
+    let table = document.getElementById(tableId);
+    let html = table.outerHTML;
+    
+    let url = 'data:application/vnd.ms-excel,' + encodeURIComponent(html);
+    let downloadLink = document.createElement("a");
+    document.body.appendChild(downloadLink);
+    
+    downloadLink.href = url;
+    downloadLink.download = 'məktəb-statistika.xls';
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+}
+</script>
+{% endblock %}
+{% endblock %} 

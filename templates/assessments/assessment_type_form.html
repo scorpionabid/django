@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}Yeni Qiymətləndirmə Növü{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Yeni Qiymətləndirmə Növü</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Ad</label>
+                            <input type="text" name="name" class="form-control" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Təsvir</label>
+                            <textarea name="description" class="form-control" rows="3"></textarea>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Minimum qiymət</label>
+                                <input type="number" 
+                                       name="min_grade" 
+                                       class="form-control" 
+                                       min="0" 
+                                       step="0.01" 
+                                       required
+                                       value="1">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Maksimum qiymət</label>
+                                <input type="number" 
+                                       name="max_grade" 
+                                       class="form-control" 
+                                       min="0" 
+                                       step="0.01" 
+                                       required
+                                       value="10">
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Yadda saxla</button>
+                            <a href="{% url 'assessment_list' %}" class="btn btn-secondary">Geri qayıt</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    $('form').on('submit', function(e) {
+        const minGrade = parseFloat($('input[name="min_grade"]').val());
+        const maxGrade = parseFloat($('input[name="max_grade"]').val());
+        
+        if (minGrade >= maxGrade) {
+            e.preventDefault();
+            alert('Minimum qiymət maksimum qiymətdən kiçik olmalıdır');
+        }
+    });
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Dəyişikliklər Tarixi</h2>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Tarix</th>
+                    <th>İstifadəçi</th>
+                    <th>Məktəb</th>
+                    <th>Dəyişiklik növü</th>
+                    <th>Köhnə dəyər</th>
+                    <th>Yeni dəyər</th>
+                    <th>Ətraflı</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for change in changes %}
+                <tr>
+                    <td>{{ change.created_at|date:"d.m.Y H:i" }}</td>
+                    <td>{{ change.user.get_full_name }}</td>
+                    <td>{{ change.school.name }}</td>
+                    <td>{{ change.get_change_type_display }}</td>
+                    <td>{{ change.old_value }}</td>
+                    <td>{{ change.new_value }}</td>
+                    <td>{{ change.description }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    {% include 'components/pagination.html' %}
+</div>
+{% endblock %} 

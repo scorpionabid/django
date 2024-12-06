@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ region.name }} - Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Ümumi Məlumat</h5>
+                    <p>Sektor sayı: {{ sectors.count }}</p>
+                    <p>Ümumi şagird sayı: {{ region.total_students }}</p>
+                </div>
+            </div>
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h5 class="card-title">Əməliyyatlar</h5>
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'import_users' %}" class="btn btn-primary">
+                            İstifadəçi İdxalı
+                        </a>
+                        <a href="{% url 'export_report' %}" class="btn btn-success">
+                            Hesabat İxracı
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Sektorlar üzrə davamiyyət</h5>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Sektor</th>
+                                    <th>Ümumi şagird</th>
+                                    <th>İştirak edənlər</th>
+                                    <th>İştirak faizi</th>
+                                    <th>Ətraflı</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stat in sector_stats %}
+                                <tr>
+                                    <td>{{ stat.sector.name }}</td>
+                                    <td>{{ stat.total_students }}</td>
+                                    <td>{{ stat.present }}</td>
+                                    <td>{{ stat.percentage }}%</td>
+                                    <td>
+                                        <a href="{% url 'sector_detail' stat.sector.id %}" 
+                                           class="btn btn-sm btn-primary">
+                                            Bax
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

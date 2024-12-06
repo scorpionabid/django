@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Profil{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Profil Məlumatları</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                {{ form.first_name|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.last_name|as_crispy_field }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                {{ form.email|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.phone|as_crispy_field }}
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Yadda saxla
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <!-- İstifadəçi məlumatları -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Hesab Məlumatları</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="text-muted">İstifadəçi növü</label>
+                        <p class="mb-0">
+                            {% if user.user_type == 'school' %}
+                                <span class="badge bg-primary">Məktəb</span>
+                            {% elif user.user_type == 'sector' %}
+                                <span class="badge bg-success">Sektor</span>
+                            {% elif user.user_type == 'region' %}
+                                <span class="badge bg-info">Region</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="text-muted">İdarə etdiyi</label>
+                        <p class="mb-0">
+                            {% if user.user_type == 'school' %}
+                                {{ user.managed_school.name }}
+                            {% elif user.user_type == 'sector' %}
+                                {{ user.managed_sector.name }}
+                            {% elif user.user_type == 'region' %}
+                                {{ user.managed_region.name }}
+                            {% endif %}
+                        </p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="text-muted">Son giriş</label>
+                        <p class="mb-0">{{ user.last_login|date:"d.m.Y H:i" }}</p>
+                    </div>
+                    
+                    <div>
+                        <label class="text-muted">Qeydiyyat tarixi</label>
+                        <p class="mb-0">{{ user.date_joined|date:"d.m.Y" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

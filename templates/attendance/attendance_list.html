@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Davamiyyət{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h2>Davamiyyət Cədvəli</h2>
+        </div>
+        {% if user.user_type == 'school' %}
+        <div class="col-auto">
+            <a href="{% url 'attendance_create' %}" class="btn btn-primary">
+                Yeni Qeyd
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Şagird</th>
+                            <th>Sinif</th>
+                            {% if user.user_type != 'school' %}
+                            <th>Məktəb</th>
+                            {% endif %}
+                            <th>Səhər</th>
+                            <th>Axşam</th>
+                            <th>Qeydlər</th>
+                            <th>Əməliyyatlar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for attendance in attendances %}
+                        <tr>
+                            <td>{{ attendance.student.get_full_name }}</td>
+                            <td>{{ attendance.student.class_grade }}</td>
+                            {% if user.user_type != 'school' %}
+                            <td>{{ attendance.student.school.name }}</td>
+                            {% endif %}
+                            <td>{{ attendance.get_morning_status_display }}</td>
+                            <td>{{ attendance.get_afternoon_status_display }}</td>
+                            <td>{{ attendance.notes|truncatechars:30 }}</td>
+                            <td>
+                                <a href="{% url 'attendance_detail' attendance.id %}" 
+                                   class="btn btn-sm btn-info">
+                                    Bax
+                                </a>
+                                {% if user.user_type == 'school' %}
+                                <a href="{% url 'attendance_update' attendance.id %}" 
+                                   class="btn btn-sm btn-warning">
+                                    Düzəliş et
+                                </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,475 @@
+{% extends 'base.html' %}
+
+{% block title %}Region Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Əsas statistika -->
+    <div class="row mb-4">
+        <div class="col">
+            <h2>Region Dashboard</h2>
+        </div>
+        <div class="col-auto">
+            <a href="?export_pdf=1" class="btn btn-success">
+                <i class="fas fa-file-pdf me-2"></i>PDF Hesabat
+            </a>
+        </div>
+    </div>
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5>Ümumi Sektor</h5>
+                    <h2>{{ total_stats.sectors }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5>Ümumi Məktəb</h5>
+                    <h2>{{ total_stats.schools }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5>Ümumi Şagird</h5>
+                    <h2>{{ total_stats.students }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h5>Ümumi Müəllim</h5>
+                    <h2>{{ total_stats.teachers }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sektor müqayisəsi -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Sektor Müqayisəsi</h5>
+                    <button class="btn btn-sm btn-success" onclick="exportToExcel('sectorTable')">
+                        <i class="fas fa-file-excel me-1"></i>Excel
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table" id="sectorTable">
+                            <thead>
+                                <tr>
+                                    <th>Sektor</th>
+                                    <th>Məktəb sayı</th>
+                                    <th>Şagird sayı</th>
+                                    <th>Davamiyyət %</th>
+                                    <th>Orta qiymət</th>
+                                    <th>Ətraflı</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for sector in sector_stats %}
+                                <tr>
+                                    <td>{{ sector.name }}</td>
+                                    <td>{{ sector.school_count }}</td>
+                                    <td>{{ sector.student_count }}</td>
+                                    <td>{{ sector.attendance_rate|floatformat:1 }}%</td>
+                                    <td>{{ sector.avg_grade|floatformat:1 }}</td>
+                                    <td>
+                                        <a href="{% url 'sector_detail' sector.id %}" 
+                                           class="btn btn-sm btn-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Problemli məktəblər -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Davamiyyəti Aşağı Olan Məktəblər</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Məktəb</th>
+                                    <th>Sektor</th>
+                                    <th>Davamiyyət %</th>
+                                    <th>Ətraflı</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for school in problem_schools %}
+                                <tr class="{% if school.attendance_rate < 60 %}table-danger{% endif %}">
+                                    <td>{{ school.name }}</td>
+                                    <td>{{ school.sector.name }}</td>
+                                    <td>{{ school.attendance_rate|floatformat:1 }}%</td>
+                                    <td>
+                                        <a href="{% url 'school_detail' school.id %}" 
+                                           class="btn btn-sm btn-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Davamiyyət trendi -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Son 30 Günün Davamiyyət Trendi</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="attendanceChart" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Qiymətləndirmə statistikası -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Fənn Üzrə Ortalama Qiymətlər</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="subjectChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Qiymət Paylanması</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="gradeDistributionChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Məktəb reytinqi -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Ən Yüksək Göstəricili Məktəblər</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Məktəb</th>
+                                    <th>Sektor</th>
+                                    <th>Orta qiymət</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for school in top_schools %}
+                                <tr>
+                                    <td>{{ school.name }}</td>
+                                    <td>{{ school.sector.name }}</td>
+                                    <td>{{ school.avg_grade|floatformat:2 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Ən Aşağı Göstəricili Məktəblər</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Məktəb</th>
+                                    <th>Sektor</th>
+                                    <th>Orta qiymət</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for school in bottom_schools %}
+                                <tr>
+                                    <td>{{ school.name }}</td>
+                                    <td>{{ school.sector.name }}</td>
+                                    <td>{{ school.avg_grade|floatformat:2 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Müəllim performansı -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Ən Yüksək Göstəricili Müəllimlər</h5>
+                    <button class="btn btn-sm btn-success" onclick="exportToExcel('teacherTable')">
+                        <i class="fas fa-file-excel me-1"></i>Excel
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table" id="teacherTable">
+                            <thead>
+                                <tr>
+                                    <th>Müəllim</th>
+                                    <th>Məktəb</th>
+                                    <th>Şagird sayı</th>
+                                    <th>Qiymətləndirmə sayı</th>
+                                    <th>Orta qiymət</th>
+                                    <th>Davamiyyət %</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for teacher in top_teachers %}
+                                <tr>
+                                    <td>{{ teacher.get_full_name }}</td>
+                                    <td>{{ teacher.school.name }}</td>
+                                    <td>{{ teacher.student_count }}</td>
+                                    <td>{{ teacher.assessment_count }}</td>
+                                    <td>{{ teacher.avg_grade|floatformat:2 }}</td>
+                                    <td>{{ teacher.attendance_rate|floatformat:1 }}%</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fənn analizi -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Fənn Performans Analizi</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Fənn</th>
+                                    <th>Şagird sayı</th>
+                                    <th>Yüksək nəticə</th>
+                                    <th>Aşağı nəticə</th>
+                                    <th>Orta qiymət</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for subject in subject_analysis %}
+                                <tr>
+                                    <td>{{ subject.name }}</td>
+                                    <td>{{ subject.total_students }}</td>
+                                    <td>{{ subject.high_performers }}</td>
+                                    <td>{{ subject.low_performers }}</td>
+                                    <td>{{ subject.avg_grade|floatformat:2 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Məktəb-Fənn Müqayisəsi</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="schoolSubjectChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function exportToExcel(tableId) {
+    let table = document.getElementById(tableId);
+    let html = table.outerHTML;
+    
+    let url = 'data:application/vnd.ms-excel,' + encodeURIComponent(html);
+    let downloadLink = document.createElement("a");
+    document.body.appendChild(downloadLink);
+    
+    downloadLink.href = url;
+    downloadLink.download = 'sektor-statistika.xls';
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Davamiyyət trendi qrafiki
+const attendanceCtx = document.getElementById('attendanceChart').getContext('2d');
+new Chart(attendanceCtx, {
+    type: 'line',
+    data: {
+        labels: [{% for day in attendance_trend reversed %}'{{ day.date|date:"d.m" }}',{% endfor %}],
+        datasets: [{
+            label: 'Davamiyyət %',
+            data: [{% for day in attendance_trend reversed %}{{ day.rate|floatformat:1 }},{% endfor %}],
+            borderColor: 'rgb(75, 192, 192)',
+            tension: 0.1
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true,
+                max: 100
+            }
+        }
+    }
+});
+
+// Fənn ortalamaları qrafiki
+const subjectCtx = document.getElementById('subjectChart').getContext('2d');
+new Chart(subjectCtx, {
+    type: 'bar',
+    data: {
+        labels: [{% for subject in subject_averages %}'{{ subject.subject__name }}',{% endfor %}],
+        datasets: [{
+            label: 'Orta qiymət',
+            data: [{% for subject in subject_averages %}{{ subject.avg_grade|floatformat:2 }},{% endfor %}],
+            backgroundColor: 'rgba(54, 162, 235, 0.5)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true,
+                max: 10
+            }
+        }
+    }
+});
+
+// Qiymət paylanması qrafiki
+const gradeCtx = document.getElementById('gradeDistributionChart').getContext('2d');
+new Chart(gradeCtx, {
+    type: 'bar',
+    data: {
+        labels: [{% for grade in grade_distribution %}'{{ grade.grade }}',{% endfor %}],
+        datasets: [{
+            label: 'Şagird sayı',
+            data: [{% for grade in grade_distribution %}{{ grade.count }},{% endfor %}],
+            backgroundColor: 'rgba(255, 99, 132, 0.5)',
+            borderColor: 'rgba(255, 99, 132, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+// Məktəb-Fənn müqayisəsi qrafiki
+const schoolSubjectCtx = document.getElementById('schoolSubjectChart').getContext('2d');
+const schoolSubjectData = {
+    {% regroup school_subject_comparison by subject__name as subject_list %}
+    {% for subject in subject_list %}
+        '{{ subject.grouper }}': {
+            schools: [{% for item in subject.list %}'{{ item.name }}',{% endfor %}],
+            grades: [{% for item in subject.list %}{{ item.avg_grade|floatformat:2 }},{% endfor %}]
+        },
+    {% endfor %}
+};
+
+const datasets = [];
+const colors = [
+    'rgba(255, 99, 132, 0.5)',
+    'rgba(54, 162, 235, 0.5)',
+    'rgba(255, 206, 86, 0.5)',
+    'rgba(75, 192, 192, 0.5)',
+    'rgba(153, 102, 255, 0.5)'
+];
+
+let colorIndex = 0;
+for (const subject in schoolSubjectData) {
+    datasets.push({
+        label: subject,
+        data: schoolSubjectData[subject].grades,
+        backgroundColor: colors[colorIndex % colors.length],
+        borderColor: colors[colorIndex % colors.length].replace('0.5', '1'),
+        borderWidth: 1
+    });
+    colorIndex++;
+}
+
+new Chart(schoolSubjectCtx, {
+    type: 'bar',
+    data: {
+        labels: Object.values(schoolSubjectData)[0].schools,
+        datasets: datasets
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true,
+                max: 10
+            }
+        }
+    }
+});
+</script>
+{% endblock %} 

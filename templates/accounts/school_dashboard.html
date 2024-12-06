@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+
+{% block title %}Məktəb Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Əsas statistika -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5>Ümumi Şagird</h5>
+                    <h2>{{ total_stats.students }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5>Ümumi Müəllim</h5>
+                    <h2>{{ total_stats.teachers }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5>Bugünkü Davamiyyət</h5>
+                    <h2>{{ attendance_rate|floatformat:1 }}%</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h5>Qayıb sayı</h5>
+                    <h2>{{ today_attendance.absent }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Davamiyyət detalları -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Bugünkü Davamiyyət</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Sinif</th>
+                                    <th>Ümumi</th>
+                                    <th>İştirak</th>
+                                    <th>Faiz</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stat in class_stats %}
+                                <tr>
+                                    <td>{{ stat.class_grade }}</td>
+                                    <td>{{ stat.total }}</td>
+                                    <td>{{ stat.present }}</td>
+                                    <td>
+                                        {% if stat.total > 0 %}
+                                            {{ stat.present|multiply:100|divide:stat.total|floatformat:1 }}%
+                                        {% else %}
+                                            0%
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Son Qiymətləndirmələr</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Şagird</th>
+                                    <th>Fənn</th>
+                                    <th>Növ</th>
+                                    <th>Qiymət</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for assessment in recent_assessments %}
+                                <tr>
+                                    <td>{{ assessment.student.get_full_name }}</td>
+                                    <td>{{ assessment.subject.name }}</td>
+                                    <td>{{ assessment.assessment_type.name }}</td>
+                                    <td>{{ assessment.grade }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sürətli əməliyyatlar -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Sürətli Əməliyyatlar</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <a href="{% url 'attendance_create' %}" class="btn btn-primary btn-lg w-100 mb-3">
+                                <i class="fas fa-plus-circle me-2"></i>Yeni Davamiyyət
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'assessment_create' %}" class="btn btn-success btn-lg w-100 mb-3">
+                                <i class="fas fa-plus-circle me-2"></i>Yeni Qiymətləndirmə
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'student_list' %}" class="btn btn-info btn-lg w-100 mb-3">
+                                <i class="fas fa-users me-2"></i>Şagird Siyahısı
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'teacher_list' %}" class="btn btn-warning btn-lg w-100 mb-3">
+                                <i class="fas fa-chalkboard-teacher me-2"></i>Müəllim Siyahısı
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
